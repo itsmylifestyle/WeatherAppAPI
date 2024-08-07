@@ -5,39 +5,62 @@ struct WeatherView: View {
     
     var body: some View {
         VStack {
-            if let currentWeather = viewModel.weatherEntries.first {
+            if let currentWeather = viewModel.dailyWeather.first?.entries.first {
                 VStack {
-                    Text("Текущая погода")
+                    Text("Astana, Kazakhstan")
                         .font(.largeTitle)
                         .padding()
-                    Text("\(currentWeather.main.temp, specifier: "%.1f")°C")
+                    Text("\(Int(currentWeather.main.temp))°C")
                         .font(.system(size: 50))
+                        .fontWeight(.bold)
                     if let description = currentWeather.weather.first?.description {
                         Text(description)
                             .font(.title)
                     }
                 }
+                .padding(.bottom, 25)
             }
             
-            Text("Прогноз на неделю")
-                .font(.largeTitle)
+            
+            Text("Weekly forecast")
+                .font(.title)
                 .padding()
             
-            List(viewModel.weatherEntries) { entry in
-                VStack(alignment: .leading) {
-                    Text(Date(timeIntervalSince1970: entry.dt), style: .date)
-                        .font(.headline)
-                    Text("\(entry.main.temp, specifier: "%.1f")°C")
+            List(viewModel.dailyWeather) { daily in
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(getDayOfWeek(from: daily.date))
                         .font(.title)
-                    if let description = entry.weather.first?.description {
-                        Text(description)
-                            .font(.subheadline)
+                        .fontWeight(.bold)
+                    
+                    if let firstEntry = daily.entries.first {
+                        Text("\(Int(firstEntry.main.temp))°C")
+                            .font(.title2)
+                            .fontWeight(.bold)
+                        
+                        if let description = firstEntry.weather.first?.description {
+                            Text(description)
+                                .font(.subheadline)
+                        }
                     }
                 }
+                .padding(.vertical, 10)
             }
         }
         .onAppear {
             viewModel.fetchWeather()
         }
+    }
+    
+    private func getDayOfWeek(from date: Date) -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "EEEE"
+        return dateFormatter.string(from: date)
+    }
+}
+
+struct WeatherView_Previews: PreviewProvider {
+    static var previews: some View {
+        WeatherView()
+            .environmentObject(WeatherViewModel())
     }
 }
